@@ -48,7 +48,7 @@ $(function () {
 
     var pieces = imgContainer.children();
     function shuffle(array) {
-      var i = array.length * 2;
+      var i = array.length * 6;
       var open = 0;
       if (i === 0) {
         return false;
@@ -58,13 +58,13 @@ $(function () {
         if (open - aspectW >= 0) {
           moves.push(open - aspectW);
         }
-        if (open + 1 <= Math.floor(open / aspectW) * open + aspectW - 1) {
+        if (open + 1 < (Math.floor(open / aspectW) + 1) * aspectW) {
           moves.push(open + 1);
         }
         if (open + aspectW < aspectW * aspectH) {
           moves.push(open + aspectW);
         }
-        if (open - 1 >= Math.floor(open / aspectW) * open) {
+        if (open - 1 >= Math.floor(open / aspectW) * aspectW) {
           moves.push(open - 1);
         }
         var move = moves[Math.floor(Math.random() * moves.length)];
@@ -77,10 +77,8 @@ $(function () {
       return open;
     }
     var remove = shuffle(pieces);
-    console.log(remove);
     container.find("#0").remove();
     pieces.splice(remove, 1);
-    console.log(positions);
     var coords = positions.splice(remove, 1);
     $.each(pieces, function (i) {
       pieces.eq(i).css(positions[i]);
@@ -88,6 +86,8 @@ $(function () {
     pieces.appendTo(imgContainer);
     empty.top = coords[0].top;
     empty.left = coords[0].left;
+    empty.bottom = empty.top + empty.bottom;
+    empty.right = empty.right + empty.left;
     positions.splice(remove, 0, ...coords);
     positions.shift();
     container.find("#ui").find("p").not("#time").remove();
