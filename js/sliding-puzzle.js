@@ -1,75 +1,95 @@
 $(function () {
-  var numberOfPieces = 12,
-    aspect = "3:4",
-    aspectW = parseInt(aspect.split(":")[0]),
-    aspectH = parseInt(aspect.split(":")[1]),
-    container = $("#puzzle"),
-    imgContainer = container.find("figure"),
-    img = imgContainer.find("img"),
-    path = img.attr("src"),
-    piece = $("<div/>"),
-    pieceW = Math.floor(img.width() / aspectW),
-    pieceH = Math.floor(img.height() / aspectH),
-    idCounter = 0,
-    positions = [],
-    empty = {
-      top: 0,
-      left: 0,
-      bottom: pieceH,
-      right: pieceW,
-    },
-    previous = {},
-    timer,
-    currentTime = {},
-    timerDisplay = container.find("#time").find("span");
-
-  for (var x = 0, y = aspectH; x < y; x++) {
-    for (var a = 0, b = aspectW; a < b; a++) {
-      var top = pieceH * x,
-        left = pieceW * a;
-      piece
-        .clone()
-        .attr("id", idCounter++)
-        .css({
-          width: pieceW,
-          height: pieceH,
-          position: "absolute",
-          top: top,
-          left: left,
-          backgroundImage: ["url(", path, ")"].join(""),
-          backgroundPosition: ["-", pieceW * a, "px ", "-", pieceH * x, "px"].join(""),
-        })
-        .appendTo(imgContainer);
-      positions.push({ top: top, left: left });
-    }
-  }
-
-  img.remove();
-  container.find("#0").remove();
-  positions.shift();
-
   $("#start").on("click", function (e) {
+    var c = $("#difficulty").val(),
+      aspectW = 3 * c,
+      aspectH = 4 * c,
+      container = $("#puzzle"),
+      imgContainer = container.find("figure"),
+      img = imgContainer.find("img"),
+      path = img.attr("src"),
+      piece = $("<div/>"),
+      pieceW = Math.floor(img.width() / aspectW),
+      pieceH = Math.floor(img.height() / aspectH),
+      idCounter = 0,
+      positions = [],
+      empty = {
+        top: 0,
+        left: 0,
+        bottom: pieceH,
+        right: pieceW,
+      },
+      previous = {},
+      timer,
+      currentTime = {},
+      timerDisplay = container.find("#time").find("span");
+
+    for (var x = 0, y = aspectH; x < y; x++) {
+      for (var a = 0, b = aspectW; a < b; a++) {
+        var top = pieceH * x,
+          left = pieceW * a;
+        piece
+          .clone()
+          .attr("id", idCounter++)
+          .css({
+            width: pieceW,
+            height: pieceH,
+            position: "absolute",
+            top: top,
+            left: left,
+            backgroundImage: ["url(", path, ")"].join(""),
+            backgroundPosition: ["-", pieceW * a, "px ", "-", pieceH * x, "px"].join(""),
+          })
+          .appendTo(imgContainer);
+        positions.push({ top: top, left: left });
+      }
+    }
+
+    img.remove();
+
     var pieces = imgContainer.children();
     function shuffle(array) {
-      var i = array.length;
+      var i = array.length * 2;
+      var open = 0;
       if (i === 0) {
         return false;
       }
       while (--i) {
-        var j = Math.floor(Math.random() * (i + 1)),
-          tempi = array[i],
-          tempj = array[j];
-        array[i] = tempj;
-        array[j] = tempi;
+        var moves = [];
+        if (open - aspectW >= 0) {
+          moves.push(open - aspectW);
+        }
+        if (open + 1 <= Math.floor(open / aspectW) * open + aspectW - 1) {
+          moves.push(open + 1);
+        }
+        if (open + aspectW < aspectW * aspectH) {
+          moves.push(open + aspectW);
+        }
+        if (open - 1 >= Math.floor(open / aspectW) * open) {
+          moves.push(open - 1);
+        }
+        var move = moves[Math.floor(Math.random() * moves.length)];
+        tempOpen = array[open];
+        tempMove = array[move];
+        array[open] = tempMove;
+        array[move] = tempOpen;
+        open = move;
       }
+      return open;
     }
-    shuffle(pieces);
+    var remove = shuffle(pieces);
+    console.log(remove);
+    container.find("#0").remove();
+    pieces.splice(remove, 1);
+    console.log(positions);
+    var coords = positions.splice(remove, 1);
     $.each(pieces, function (i) {
       pieces.eq(i).css(positions[i]);
     });
     pieces.appendTo(imgContainer);
-    empty.top = 0;
-    empty.left = 0;
+    empty.top = coords[0].top;
+    empty.left = coords[0].left;
+    positions.splice(remove, 0, ...coords);
+    positions.shift();
     container.find("#ui").find("p").not("#time").remove();
 
     if (timer) {

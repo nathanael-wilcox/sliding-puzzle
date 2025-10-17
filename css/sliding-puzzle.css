@@ -29,3 +29,10 @@
   height: 50px;
   font-size: 1.75em;
 }
+#ui input {
+  display: block;
+  width: 240px;
+}
+#0 {
+  opacity: 0;
+}
